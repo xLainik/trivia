@@ -3,13 +3,52 @@
 <head>
 	<meta charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Hola Mundo</title>
+	<title>trivia web socket</title>
+
+	<style>
+		#messages {
+
+		}
+	</style>
+
+	<script type="module">
+		import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+
+		const socket = io();
+
+		const form = document.getElementById('form')
+		const input = document.getElementById('input')
+		const messages = document.getElementById('messages')
+
+		socket.on('chat message', (msg) =>{
+			const item = `<li>${msg}</li>`
+			messages.insertAdjacentHTML('beforeend', item)
+		})
+
+		form.addEventListener('submit', (e) => {
+			e.preventDefault()
+
+			if (input.value) {
+				socket.emit('chat message', input.value)
+				input.value = ''
+			}
+		})
+
+	</script>
 </head>
 <body>
-	<h1>Hola</h1>
-	<from id="form">
-		<input type="text" name="message" id="input" placeholder="Type a message" autocomplete="off" \>
-		<button type="sumit">Sumit</button>
-	</from>
+	<h1>Mi Chat</h1>
+	<section id="chat">
+	    
+	    <form id="form">
+		    <input type="text" name="message" id="input" placeholder="Escriba un mensaje..." autocomplete="off" />
+		    <button type="submit">Enviar</button>
+	    </form>
+
+	    <ul id="messages">
+	    	<l1>Mensaje enviados:</l1>
+	    </ul>
+
+  </section>
 </body>
 </html>
