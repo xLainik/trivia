@@ -6,7 +6,7 @@ import cors from 'cors'
 dotenv.config();
 
 
-const port = 3000
+const port = process.env.PORT
 
 import { Server } from 'socket.io'
 import { createServer } from 'node:http'
