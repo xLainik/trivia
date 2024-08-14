@@ -20,70 +20,24 @@
 
 		}
 
-		.question {
-			border-radius: 10px;
-			border-width: 0px;
-			background: #F8F8F8;
-			padding: 20px 0px;
-			width: 85%;
-			height: 45%;
-			margin: 4px 7.5%;
-		}
-
-		.question_img {
-			margin: 4px 22.5%;
-			width: 55%;
-			height: auto;
-		}
-
-		.answers {
-			color: #0C0C0C;
-			background-color: #F9F9F9;
-			border-radius: 4px;
-			border-width: 0px;
-			padding: 12px;
-			margin: 4px;
-			width: 80%;
-			box-shadow: 0 4px #454545;
-		}
-
-		.answers:hover {
-			background-color: #A4BEFF;
-		}
-
-		.answers:active {
-			background-color: #A4BEFF;
-			box-shadow: 0 2px #454545;
-			transform: translateY(2px);
-		}
-
-		#form>button {
-	    	background: #09f;
+		.clickable {
+			background: #09f;
 	    	color: #fff;
 	    	border: 0;
 	    	margin: 4px;
 	    	border-radius: 4px;
-	    }
-
-	    #form>button:hover {
-	    	background: #0cf;
-	    }
-
-		#chat {
-			color:red;
 		}
+
+		.clickable:hover {
+			background: #0cf;
+		}
+
 	</style>
 
 	<script type="module">
 		import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 
 		const socket = io();
-
-		socket.on('chat message', (msg) =>{
-			const messages = document.getElementById('messages')
-			const item = `<li>${msg}</li>`
-			messages.insertAdjacentHTML('beforeend', item)
-		})
 
 		const form = document.getElementById('form')
 
@@ -92,39 +46,17 @@
 
 			if (input.value) {
 				const input = document.getElementById('input')
-				socket.emit('question request', input.value)
-
-				fetch('/question/'+input.value)
-	    		.then(response => response.json())
-	    		.then(data => {
-	    			//Question Media
-				    const question_media = document.getElementById("question_media");
-				    question_media.innerHTML = `<img class="question_img" id="question_media" src = ${data.Question_Media}>`
-					//console.log(question_media);
-
-				    //Question string
-				    const question_string = document.getElementById('question_string')
-					question_string.innerText = `${data.Question_String}`
-
-					//Answer strings
-					const answer_string_1 = document.getElementById('answer_1')
-					answer_string_1.innerText = `${data.Answer_1}`
-
-					const answer_string_2 = document.getElementById('answer_2')
-					answer_string_2.innerText = `${data.Answer_2}`
-
-					const answer_string_3 = document.getElementById('answer_3')
-					answer_string_3.innerText = `${data.Answer_3}`
-
-
-					const answer_string_4 = document.getElementById('answer_4')
-					answer_string_4.innerText = `${data.Answer_4}`
-
-
-	    		});
+				
+				socket.emit('room enter', input.value)
 
 				input.value = ''
 			}
+		})
+
+		create.addEventListener('click', (e) => {
+			e.preventDefault()
+
+			socket.emit('room create')
 		})
 
 
@@ -133,34 +65,23 @@
 	</script>
 </head>
 <body>
-	<h1>Trivia game</h1>
+	<h1>Lobby</h1>
 
-	<section id="chat">
+	<section id="enter_room">
 	    
 	    <form id="form">
-		    <input type="text" name="message" id="input" placeholder="Escoja una pregunta..." autocomplete="off" />
-		    <button type="submit">Enter</button>
+		    <input type="text" name="message" id="input" placeholder="Enter Code..." autocomplete="off" />
+		    <button class="clickable" type="submit">Enter</button>
 	    </form>
 
     </section>
 
-    
+    <p>or</p>
 
-    <section id="question sentence">
-
-    	<p class="question" id="question_string">
-    		
-    	</p>
-    		<div class="question_img" id="question_media">	
-    	
-
+    <section>
+    	<button class="clickable" id = "create">Create New</button>
     </section>
 
-    <section id="answer options">
-	    <button type="submit" class ="answers" id="answer_1"></button>
-	    <button type="submit" class ="answers" id="answer_2"></button>
-	    <button type="submit" class ="answers" id="answer_3"></button>
-	    <button type="submit" class ="answers" id="answer_4"></button>
-    </section>
+   
 </body>
 </html>

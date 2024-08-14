@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>trivia web socket</title>
+
+	<style>
+
+		* {
+		    font-size: 14pt;
+		    font-family: Monserrat;
+		}
+		body {
+			background-color: #446F86;
+			text-align: center;
+			place-content: center;
+		}
+		#messages {
+
+		}
+
+		.question {
+			border-radius: 10px;
+			border-width: 0px;
+			background: #F8F8F8;
+			padding: 20px 0px;
+			width: 85%;
+			height: 45%;
+			margin: 4px 7.5%;
+		}
+
+		.question_img {
+			margin: 4px 22.5%;
+			width: 55%;
+			height: auto;
+		}
+
+		.answers {
+			color: #0C0C0C;
+			background-color: #F9F9F9;
+			border-radius: 4px;
+			border-width: 0px;
+			padding: 12px;
+			margin: 4px;
+			width: 80%;
+			box-shadow: 0 4px #454545;
+		}
+
+		.answers:hover {
+			background-color: #A4BEFF;
+		}
+
+		.answers:active {
+			background-color: #A4BEFF;
+			box-shadow: 0 2px #454545;
+			transform: translateY(2px);
+		}
+
+		#form>button {
+	    	background: #09f;
+	    	color: #fff;
+	    	border: 0;
+	    	margin: 4px;
+	    	border-radius: 4px;
+	    }
+
+	    #form>button:hover {
+	    	background: #0cf;
+	    }
+
+		#chat {
+			color:red;
+		}
+	</style>
+
+	<script type="module">
+		import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
+
+		const socket = io();
+
+		socket.on('question request', (id) => {
+			console.log('recived question', id)
+			
+			fetch('/question/'+id)
+	    		.then(response => response.json())
+	    		.then(data => {
+	    			//Question Media
+				    const question_media = document.getElementById("question_media");
+				    question_media.innerHTML = `<img class="question_img" id="question_media" src = ${data.Question_Media}>`
+					//console.log(question_media);
+
+				    //Question string
+				    const question_string = document.getElementById('question_string')
+					question_string.innerText = `${data.Question_String}`
+
+					//Answer strings
+					const answer_string_1 = document.getElementById('answer_1')
+					answer_string_1.innerText = `${data.Answer_1}`
+
+					const answer_string_2 = document.getElementById('answer_2')
+					answer_string_2.innerText = `${data.Answer_2}`
+
+					const answer_string_3 = document.getElementById('answer_3')
+					answer_string_3.innerText = `${data.Answer_3}`
+
+
+					const answer_string_4 = document.getElementById('answer_4')
+					answer_string_4.innerText = `${data.Answer_4}`
+
+	    		});
+		})
+
+		const form = document.getElementById('form')
+
+		form.addEventListener('submit', (e) => {
+			e.preventDefault()
+
+			if (input.value) {
+				const input = document.getElementById('input')
+				console.log('emit', input.value)
+				socket.emit('question request', input.value)
+
+				
+
+				input.value = ''
+			}
+		})
+
+
+    	
+
+	</script>
+</head>
+<body>
+	<h1>Trivia game</h1>
+
+	<section id="chat">
+	    
+	    <form id="form">
+		    <input type="text" name="message" id="input" placeholder="Escoja una pregunta..." autocomplete="off" />
+		    <button type="submit">Enter</button>
+	    </form>
+
+    </section>
+
+    
+
+    <section id="question sentence">
+
+    	<p class="question" id="question_string">
+    		
+    	</p>
+    		<div class="question_img" id="question_media">	
+    	
+
+    </section>
+
+    <section id="answer options">
+	    <button type="submit" class ="answers" id="answer_1"></button>
+	    <button type="submit" class ="answers" id="answer_2"></button>
+	    <button type="submit" class ="answers" id="answer_3"></button>
+	    <button type="submit" class ="answers" id="answer_4"></button>
+    </section>
+</body>
+</html>

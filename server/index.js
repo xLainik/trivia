@@ -5,13 +5,12 @@ import dotenv from 'dotenv'
 import cors from 'cors'
 dotenv.config();
 
-
-const port = process.env.PORT
+const port = 3000
 
 import { Server } from 'socket.io'
 import { createServer } from 'node:http'
 
-import { getQuestion } from './db.js'
+import { getQuestion, createRoom } from './db.js'
 
 const server = createServer(app)
 const io = new Server(server, {
@@ -33,6 +32,20 @@ io.on('connection', (socket) => {
 	socket.on('question request', (id) => {
 		console.log(`requesting question ${id}`)
 		app.get(`/question/${id}`)
+		io.emit('question request', id)
+	})
+
+	socket.on('room create', () => {
+		createRoom()
+		.then(function (result) {
+			console.log('room created', result);
+			//app.get(`/lobby/${result}`)
+		})
+	})
+
+	socket.on('room enter', (hash) => {
+		console.log(`enter room ${hash}`)
+		app.get(`/lobby/${hash}`)
 	})
 })
 
@@ -41,6 +54,14 @@ app.use(logger('dev'))
 app.get('/', (req, res) => {
 	//send the file index.html to the client
 	res.sendFile(process.cwd() + '/client/index.html')
+})
+
+app.get('/lobby/:hash', (req, res) => {
+	//enter a room
+	const hash = req.params.hash
+	console.log('entering', hash)
+	res.sendFile(process.cwd() + '/client/lobby.html')
+	res.redirect(`/lobby/${hash}`)
 })
 
 app.get('/question/:id', async (req, res) => {

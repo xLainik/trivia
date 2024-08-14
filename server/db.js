@@ -23,3 +23,24 @@ export async function getQuestion(id) {
     WHERE q.Question_ID = ?;`, [id]);
   return result[0];
 }
+
+
+function generateHash(length) {
+  const characters ='0123456789';
+  let result = '';
+  const charactersLength = characters.length;
+  for ( let i = 0; i < length; i++ ) {
+      result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+
+  return result;
+}
+
+export async function createRoom() {
+  db_connection.query("USE triviadb;")
+  const hash = generateHash(5)
+  const room_name = 'room_' + hash
+  const [result] = await db_connection.query(`CREATE TABLE ${room_name} (token VARCHAR(30) PRIMARY KEY, username TEXT(30), score INT);`);
+
+  return hash;
+}
