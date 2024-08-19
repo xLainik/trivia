@@ -5,162 +5,220 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>trivia web socket</title>
 
-	<style>
+	<link rel="stylesheet" type="text/css" href="/my_styles.css"/>
 
-		* {
-		    font-size: 14pt;
-		    font-family: Monserrat;
-		}
-		body {
-			background-color: #446F86;
-			text-align: center;
-			place-content: center;
-		}
-		#messages {
-
-		}
-
-		.question {
-			border-radius: 10px;
-			border-width: 0px;
-			background: #F8F8F8;
-			padding: 20px 0px;
-			width: 85%;
-			height: 45%;
-			margin: 4px 7.5%;
-		}
-
-		.question_img {
-			margin: 4px 22.5%;
-			width: 55%;
-			height: auto;
-		}
-
-		.answers {
-			color: #0C0C0C;
-			background-color: #F9F9F9;
-			border-radius: 4px;
-			border-width: 0px;
-			padding: 12px;
-			margin: 4px;
-			width: 80%;
-			box-shadow: 0 4px #454545;
-		}
-
-		.answers:hover {
-			background-color: #A4BEFF;
-		}
-
-		.answers:active {
-			background-color: #A4BEFF;
-			box-shadow: 0 2px #454545;
-			transform: translateY(2px);
-		}
-
-		#form>button {
-	    	background: #09f;
-	    	color: #fff;
-	    	border: 0;
-	    	margin: 4px;
-	    	border-radius: 4px;
-	    }
-
-	    #form>button:hover {
-	    	background: #0cf;
-	    }
-
-		#chat {
-			color:red;
-		}
-	</style>
+	<link href='https://fonts.googleapis.com/css?family=Freeman' rel='stylesheet'>
 
 	<script type="module">
 		import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 
 		const socket = io();
 
+		const lobby_hash = sessionStorage.getItem('hash')
+		const client_username = sessionStorage.getItem('username')
+
+		// client-side
+		socket.on("connect", () => {
+			console.log('CLIENT Socket', socket.id);
+		});
+
+		fetch(`/enterlobby/${lobby_hash}/${client_username}`)
+	    		.then(response => response.json())
+	    		.then(data => {
+	    			console.log('check username @ hash', data)
+	    			socket.emit('refresh lobby', lobby_hash)
+	    		})
+		
+		const lobby_title = document.getElementById("lobby_title")
+		lobby_title.innerText = `Lobby (${lobby_hash})`
+
+		const client_tittle = document.getElementById("client_tittle")
+		client_tittle.innerText = `playing as: ${client_username}`
+
+		const shuffle = (array) => { 
+			for (let i = array.length - 1; i > 0; i--) { 
+				const j = Math.floor(Math.random() * (i + 1)); 
+				[array[i], array[j]] = [array[j], array[i]]; 
+			} 
+			return array; 
+		}; 
+
+		// Received a question from the server
 		socket.on('question request', (id) => {
 			console.log('recived question', id)
-			
+
+			// Set timer countdown
+			var timer = 10
+			var timer_countdown = setInterval(function() {
+
+			timer -= 1;
+			document.getElementById('client_timer').innerText = `${timer}`
+
+			if (timer <= 0) {
+				// countdown is finished
+				clearInterval(timer_countdown)
+
+				}
+			}, 1000);
+
+			// Set GET request
 			fetch('/question/'+id)
 	    		.then(response => response.json())
 	    		.then(data => {
 	    			//Question Media
 				    const question_media = document.getElementById("question_media");
-				    question_media.innerHTML = `<img class="question_img" id="question_media" src = ${data.Question_Media}>`
-					//console.log(question_media);
+				    question_media.innerHTML = `<img class="question_img" src = ${data.Question_Media}>`
 
 				    //Question string
 				    const question_string = document.getElementById('question_string')
 					question_string.innerText = `${data.Question_String}`
 
-					//Answer strings
-					const answer_string_1 = document.getElementById('answer_1')
-					answer_string_1.innerText = `${data.Answer_1}`
+					//Shuffle the answers order on client
+					const new_order = shuffle([1,2,3,4])
+					const answers = [data.Answer_1, data.Answer_2, data.Answer_3, data.Answer_4]
 
-					const answer_string_2 = document.getElementById('answer_2')
-					answer_string_2.innerText = `${data.Answer_2}`
+					const buttons = document.getElementById('all_answers')
+					for (let i=0; i <= 3; i++) {
+						//console.log(i, `answer_${new_order[i]}`, answers[new_order[i]-1])
+						var b = document.getElementById(`answer_${new_order[i]}`);
+					    b.innerText = answers[new_order[i]-1];
 
-					const answer_string_3 = document.getElementById('answer_3')
-					answer_string_3.innerText = `${data.Answer_3}`
+					    buttons.appendChild(b)
 
+					    b.setAttribute('class', 'answers unknown')
+					}
 
-					const answer_string_4 = document.getElementById('answer_4')
-					answer_string_4.innerText = `${data.Answer_4}`
-
+					// Default answer
+					sessionStorage.setItem('answer', 0)
 	    		});
 		})
-
+		
 		const form = document.getElementById('form')
 
+		// Submit a new question request to the server
 		form.addEventListener('submit', (e) => {
 			e.preventDefault()
 
 			if (input.value) {
 				const input = document.getElementById('input')
 				console.log('emit', input.value)
-				socket.emit('question request', input.value)
-
-				
+				socket.emit('question request', lobby_hash, input.value)
 
 				input.value = ''
 			}
 		})
 
+		// Timeout for the question submition
+		socket.on('question timeout', () => {
+			console.log('client timeout')
+			const client_answer = sessionStorage.getItem('answer')
+			// Reveal answers
+			for (let i = 1; i <= 4; i++) {
+				const button_i = document.getElementById('answer_'+i)
+				// Show correct answer
+				if (i == 1) {
+					button_i.setAttribute('class', 'answers correct')
+				}
+				// Show wrong answer
+				else if (client_answer == i && i != 1) {
+					button_i.setAttribute('class', 'answers wrong')
+				}
+				// Show not selected
+				else {
+					button_i.setAttribute('class', 'answers not_selected')
+				}
+			}
+
+			// Send to server a refresh lobby to update lobby on all clients
+			socket.emit('refresh lobby', lobby_hash)
+			
+		})
+
+		socket.on('new question', () => {
+			console.log('client NEW question')
+		})
+
+		socket.on('client disconnect', (data) => {
+		    console.log(data)
+		})
+
+
+		socket.on('update lobby', (response) => {
+			//console.log('Client LOBBY Response', response)
+
+			const player_list = document.getElementById('player_list')
+			player_list.innerHTML = ''
+
+			for (let i = 0; i < response.length; i++) {
+				const player = `<li>
+		        <div class="player_card">${response[i].username}<br>${response[i].score}</div>
+		      	</li>`
+	      		player_list.insertAdjacentHTML('beforeend', player)
+			}
+			
+		})
+
+		// Submit an answer to the server
+		for (let i = 1; i <= 4; i++) {
+			const button_i = document.getElementById('answer_'+i)
+
+			button_i.addEventListener('click', (e) => {
+				fetch('/answer', {
+					method: 'POST',
+					headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({answer: i, hash: lobby_hash, username: client_username})
+				}).then(response => response.json())
+	    		.then(data => {
+	    			if (data.response == 0) {
+	    				sessionStorage.setItem('answer', i)
+
+						// Show selected answer
+						button_i.setAttribute('class', 'answers selected')
+	    			}
+	    		});
+			})
+		}
 
     	
-
 	</script>
 </head>
 <body>
-	<h1>Trivia game</h1>
+	<h1 id="lobby_title"></h1>
+	<span id="client_tittle"></span>
 
-	<section id="chat">
-	    
-	    <form id="form">
-		    <input type="text" name="message" id="input" placeholder="Escoja una pregunta..." autocomplete="off" />
-		    <button type="submit">Enter</button>
-	    </form>
+	<ol id="player_list"></ol>
 
-    </section>
+ 	<form id="form">
+	    <input type="text" name="message" id="input" placeholder="Escoja una pregunta..." autocomplete="off" />
+	    <button type="submit" class="clickable">Enter</button>
+    </form>
 
-    
+    <table style="width: 95%;">
+		<tbody>
+			<tr>
+			<td style="width: 20%;"><center><p class="timer" id="client_timer">--</p></center></td>
+			<td style="width: 80%;"><center><p class="question" id="question_string"></p></center></td>
+			</tr>
+		</tbody>
+	</table>
 
-    <section id="question sentence">
+    <div class="row">
+	  	<div class="column left">
+	  		<div id="parent">
+	    		<div id="question_media"></div>
+	    	</div>
+	  	</div>
+		<div class="column right">
+	    	<ul id="all_answers">
+		    	<li><button type="submit" class ="answers" id="answer_1"></button></li>
+			    <li><button type="submit" class ="answers" id="answer_2"></button></li>
+			    <li><button type="submit" class ="answers" id="answer_3"></button></li>
+			    <li><button type="submit" class ="answers" id="answer_4"></button></li>
+			</ul>
+	  	</div>
+	</div>
 
-    	<p class="question" id="question_string">
-    		
-    	</p>
-    		<div class="question_img" id="question_media">	
-    	
-
-    </section>
-
-    <section id="answer options">
-	    <button type="submit" class ="answers" id="answer_1"></button>
-	    <button type="submit" class ="answers" id="answer_2"></button>
-	    <button type="submit" class ="answers" id="answer_3"></button>
-	    <button type="submit" class ="answers" id="answer_4"></button>
-    </section>
 </body>
 </html>

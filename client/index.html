@@ -5,58 +5,61 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title>trivia web socket</title>
 
-	<style>
+	<link rel="stylesheet" type="text/css" href="my_styles.css"/>
 
-		* {
-		    font-size: 14pt;
-		    font-family: Monserrat;
-		}
-		body {
-			background-color: #446F86;
-			text-align: center;
-			place-content: center;
-		}
-		#messages {
-
-		}
-
-		.clickable {
-			background: #09f;
-	    	color: #fff;
-	    	border: 0;
-	    	margin: 4px;
-	    	border-radius: 4px;
-		}
-
-		.clickable:hover {
-			background: #0cf;
-		}
-
-	</style>
+	<link href='https://fonts.googleapis.com/css?family=Freeman' rel='stylesheet'>
 
 	<script type="module">
 		import { io } from "https://cdn.socket.io/4.7.5/socket.io.esm.min.js";
 
-		const socket = io();
+		const getUsername = (name) => {
+			if (name == '') {
+				return 'User'
+			} else { return name }
+		}
 
-		const form = document.getElementById('form')
+		const socket = io( )
 
-		form.addEventListener('submit', (e) => {
+		const username_input = document.getElementById('username_input')
+		const username_form = document.getElementById('username_form')
+		const lobby_form = document.getElementById('lobby_form')
+		const create = document.getElementById('create')
+
+
+		username_form.addEventListener('submit', (e) => {
+			e.preventDefault()
+		})
+
+		lobby_form.addEventListener('submit', (e) => {
 			e.preventDefault()
 
-			if (input.value) {
-				const input = document.getElementById('input')
-				
-				socket.emit('room enter', input.value)
+			let hash
 
-				input.value = ''
+			const lobby_input = document.getElementById('lobby_input')
+			if (lobby_input.value) {
+				
+				location.href += 'lobby/' + lobby_input.value
+
+				hash = lobby_input.value
+
+				lobby_input.value = ''
 			}
+
+			const name = getUsername(username_input.value)
+
+			sessionStorage.setItem('username', name)
+			sessionStorage.setItem('hash', hash)
+
+			username_input.value = ''
 		})
 
 		create.addEventListener('click', (e) => {
 			e.preventDefault()
 
-			socket.emit('room create')
+			socket.emit('room create', "", (response) => {
+				location.href += 'lobby/' + response
+			})
+		
 		})
 
 
@@ -65,23 +68,30 @@
 	</script>
 </head>
 <body>
-	<h1>Lobby</h1>
+
+	<h1>TRIVIA GAME</h1>
+
+	<section id="enter_username">
+		<form id="username_form">
+			<p>My name is
+		    <input type="text" name="username" id="username_input" placeholder="User" autocomplete="off" maxlength="10" size="12"/>
+		    </p>
+	    </form>
+	</section>
+
+	<br>
 
 	<section id="enter_room">
 	    
-	    <form id="form">
-		    <input type="text" name="message" id="input" placeholder="Enter Code..." autocomplete="off" />
-		    <button class="clickable" type="submit">Enter</button>
-	    </form>
-
+	    <p>
+	    	<form id="lobby_form">
+			    <input type="text" name="lobby_code" id="lobby_input" placeholder="Enter lobby code..." autocomplete="off" maxlength="5" />
+			    <button class="clickable" type="submit">Enter</button>
+		    </form>
+	    	or <button class="clickable" id = "create">Create New Lobby</button>
+	    </p>
+	    
     </section>
-
-    <p>or</p>
-
-    <section>
-    	<button class="clickable" id = "create">Create New</button>
-    </section>
-
    
 </body>
 </html>

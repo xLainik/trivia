@@ -1,0 +1,159 @@
+* {
+    font-size: 16pt;
+    min-font-size: 6pt;
+  	max-font-size: 32pt;
+    font-family: Freeman;
+}
+body {
+	background-color: #446F86;
+	text-align: center;
+	place-content: center;
+}
+p {
+	margin: 0.1em;
+}
+small {
+	font-size: 0.75em;
+}
+h1 {
+	font-size: 20pt;
+	color: #FE7059;
+	text-shadow: #454545 0.05em 0.1em;
+}
+h2 {
+	font-size: 14pt;
+}
+ul {
+    padding: 0;
+    list-style-type: none;
+}
+tr {
+	padding: 0;
+	height: 10vh;
+}
+.clickable {
+	background: #09f;
+	color: #fff;
+	border: 0;
+	margin: 4px;
+	border-radius: 4px;
+	cursor: pointer;
+}
+.clickable:hover {
+	background: #0cf;
+}
+#parent {
+	position: relative;
+	width: 100%;
+	height: 100%;
+}
+.question {
+	border-radius: 10px;
+	border-width: 0px;
+	background: #F8F8F8;
+	padding: 20px 2px;
+	width: 100%;
+	top: 0;
+	left: 10%;
+	z-index: 7;
+}
+.timer {
+	font-weight: bold;
+	font-size: 32pt;
+	color: #F8F8F8;
+	background-color: #09f;
+	height: 1.6em;
+	width: 2em;
+	border-radius: 50%;
+	border-width: 0px;
+	border-color: red;
+	padding-top: 0.4em;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	z-index: 6;
+}
+.column {
+  float: left;
+  padding: 12px;
+  
+}
+.left {
+  width: 35%;
+  height: 20vh;
+}
+.right {
+  width: 55%;
+  height: 20vh;
+}
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.question_img {
+	width: 85%;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 2;
+}
+.answers {
+	color: #0C0C0C;
+	border-radius: 4px;
+	border-width: 0px;
+	padding: 12px;
+	width: 100%;
+	margin: 4px;
+	box-shadow: 0 4px #454545;
+}
+.correct {
+	background-color: #A0FA7C;
+}
+.wrong {
+	background-color: #F53838;
+}
+.not_selected {
+	background-color: #969595;
+}
+.selected {
+	background-color: #7D65F5;
+}
+.unknown {
+	background-color: #F9F9F9;
+	cursor: pointer;
+}
+.unknown:hover {
+	background-color: #A4BEFF;;
+}
+.unknown:active {
+	background-color: #A4BEFF;
+	box-shadow: 0 2px #454545;
+	transform: translateY(2px);
+}
+.unknown:disabled {
+	color: #F9F9F9;
+	background-color: #969595;
+	box-shadow: 0 2px #454545;
+}
+#player_list {
+	list-style-type: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	background-color: #454545;
+}
+.player_card {
+	font-size: 14pt;
+	width: 12%;
+	white-space: nowrap; 
+	overflow: hidden;
+	text-overflow: clip;
+	color: #F9F9F9;
+	background-color: #969595;
+	float: left;
+  	padding: 0em 0.5em;
+  	margin: 0;
+}
+.player_card:hover {
+	background-color: #09f;
+}
